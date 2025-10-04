@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang = "en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <title>Farm Decisions — NASA Data Demo</title>
+
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+        <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Nunito&family=Patrick+Hand&display=swap" rel="stylesheet">
+
+        <link href="https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@600&family=Noto+Sans+Arabic&family=Cairo&display=swap" rel="stylesheet">
+
+        <link rel="stylesheet" href="style.css">    <!--link style.css-->
+        <link rel="stylesheet" href="welcome.css">
+    </head>
+
+    <body>
+        <!--navbar-->
+      <header>
+         <div class="logo">AgriSpace</div>
+            <nav>
+                 <a href="home.html"><i class ="fa fa-home"></i>Home</a>
+                <a href = "Games.html"><i class = "fa fa-gamepad"></i>Games</a>
+                <a href="about.html"><i class = "fa fa-info-circle"></i>About</a>
+                <a href="Contact.html"><i class = "fa fa-envelope"></i>Contact</a>
+                <span id="profile-pic"></span>
+                <span id="Welcome-text"></span>
+            </nav>
+      </header>
+
+        <!-- video background-->
+
+        <video autoplay muted loop id="bg-video">
+            <source src="AgriSpace_video.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+        </video>
+
+        <!--Page content-->
+
+        <div class = "overlay">
+            <h1> Meet your guides</h1>
+
+        <!--First character-->
+
+            <div class="characters-container">
+
+                <!--Yahya al-Zari‘-->
+            <div class="character-card">
+                <div class="card-inner">
+                    <!-- Card front -->
+                    <div class="card-front">
+                        <div class="avatar-circle">
+                            <img src="farmer.png" alt="Yahya">
+                        </div>
+                        <div class="speech-bubble">
+                            <p>Hi! I’m Yahya, a young planter learning to face climate challenges.</p>
+                        </div>
+                    </div>
+                    <!--card back-->
+                    <div class="card-back">
+                        <h2>يحيى الزارع (Yahya al-Zari‘)</h2>
+                        <p><strong>Role:</strong> The Young Planter </p>
+                        <p><strong>Backstory:</strong> A curious young farmer eager to try new techniques.</p>
+                      <p><strong>Skill:</strong> Fast learner, excellent at seed selection.</p>
+                    <p><strong>Challenge:</strong> Sometimes takes risks without enough knowledge.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shams al-Din al-Dimashqi -->
+  <div class="character-card">
+    <div class="card-inner">
+      <!-- Front -->
+      <div class="card-front">
+        <div class="avatar-circle">
+          <img src="scientist.png" alt="Shams">
+        </div>
+        <div class="speech-bubble">
+          <p>Hello! I’m Shams, here to help you understand your farm decisions.</p>
+        </div>
+      </div>
+
+      <!-- Back -->
+      <div class="card-back">
+        <h2>شمس الدين الدمشقي (Shams al-Din al-Dimashqi)</h2>
+        <p><strong>Role:</strong> The Geographer of Fields</p>
+        <p><strong>Specialty:</strong> Soils and land types in Syria and beyond.</p>
+        <p><strong>Power/Skill:</strong> Can analyze soil and suggest best crops.</p>
+        <p><strong>Quote:</strong> “The land shapes the farmer, as much as the farmer shapes the land.”</p>
+      </div>
+    </div>
+  </div>
+
+                
+            </div>
+
+        <!-- Second character-->
+
+         <div class="character">
+            <div class = "avatar-circle" >
+                <img src="Scientist1.jpg" alt="Dr.Shams al-Din al-Dimashqi">
+            </div>
+        
+        <div class="scientist-speach">
+            <p>Hello! I’m Sara, here to help you understand your farm decisions.</p>
+        </div>
+          </div>
+
+          <!-- دعوة لاختيار الكاركتر -->
+        <div class="choose-character-section">
+            <a href="choose-character.html" class="choose-btn" >Start</a>
+            </div>
+        </div>
+        <script src="script.js"></script>
+    </body>
+    
+</html>

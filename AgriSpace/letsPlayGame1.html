@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Soil Sampling Game</title>
+  <style>
+    body {
+      font-family: 'Comic Neue', cursive;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+      color: white;
+    }
+
+    /* خلفية الفيديو */
+    .video-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -2;
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.4);
+      z-index: -1;
+    }
+
+    h2 {
+      margin-top: 15px;
+      text-shadow: 0 0 8px black;
+    }
+
+    #game {
+      display: flex;
+      justify-content: space-around;
+      align-items: flex-start;
+      margin-top: 30px;
+    }
+
+    /* الأدوات */
+    #tools {
+      border: 2px solid #ccc;
+      padding: 15px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 10px;
+      width: 150px;
+      backdrop-filter: blur(5px);
+    }
+
+    .tool {
+      width: 80px;
+      margin: 10px auto;
+      cursor: grab;
+      display: block;
+    }
+
+    /* التربة */
+    #soil {
+      border: 2px dashed #d2691e;
+      background: url("soil.png") no-repeat center/cover;
+      width: 400px;
+      height: 400px;
+      position: relative;
+      border-radius: 12px;
+    }
+
+    #arrow {
+      position: absolute;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 40px;
+      color: yellow;
+      text-shadow: 0 0 6px black;
+    }
+
+    /* الدلو */
+    #bucket {
+      border: 2px solid #ccc;
+      width: 150px;
+      height: 200px;
+      background: url("bucket.jpg") no-repeat center/contain;
+      background-color: rgba(255,255,255,0.2);
+      border-radius: 10px;
+      backdrop-filter: blur(5px);
+    }
+
+    /* رسالة */
+    #message {
+      margin-top: 20px;
+      font-weight: bold;
+      font-size: 20px;
+      color: #00ff7f;
+      background: rgba(0,0,0,0.6);
+      padding: 10px 20px;
+      border-radius: 8px;
+      display: inline-block;
+      text-shadow: 0 0 5px black;
+    }
+
+    /* زرار */
+    #nextBtn {
+      display: none;
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 18px;
+      background: linear-gradient(90deg, #28a745, #218838);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    #nextBtn:hover {
+      background: linear-gradient(90deg, #218838, #1e7e34);
+    }
+
+    /* Tooltips */
+    .tool-container {
+      position: relative;
+      display: inline-block;
+    }
+
+    .tooltip {
+      visibility: hidden;
+      width: 180px;
+      background-color: #333;
+      color: #fff;
+      text-align: center;
+      border-radius: 8px;
+      padding: 5px;
+      position: absolute;
+      top: -40px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      font-size: 14px;
+      opacity: 0;
+      transition: opacity 0.1s;
+    }
+
+    .tool-container:hover .tooltip {
+      visibility: visible;
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <h2>Soil Sampling Game</h2>
+  <p>Drag a tool → Drop on soil → Then put the sample into the bucket. Collect all 3!</p>
+
+  <video autoplay muted loop class="video-bg">
+    <source src="AgriSpace_video.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+  <div class="overlay"></div>
+
+  <div id="game">
+    <!-- الأدوات مع Tooltip -->
+    <div id="tools">
+      <div class="tool-container">
+        <img src="shovel-removebg-preview.png" class="tool" draggable="true" id="shovel">
+        <div class="tooltip">Use the shovel to dig the soil and take a small sample!</div>
+      </div>
+      <div class="tool-container">
+        <img src="licensed-image__1_-removebg-preview.png" class="tool" draggable="true" id="rake">
+        <div class="tooltip">Use the rake to loosen the soil and make it ready to check!</div>
+      </div>
+      <div class="tool-container">
+        <img src="probe-removebg-preview.png" class="tool" draggable="true" id="probe">
+        <div class="tooltip">Use the probe to measure soil moisture and temperature accurately!</div>
+      </div>
+    </div>
+
+    <!-- التربة -->
+    <div id="soil">
+      <div id="arrow">⬇️</div>
+    </div>
+
+    <!-- الدلو -->
+    <div id="bucket"></div>
+  </div>
+
+  <p id="message"></p>
+  <button id="nextBtn" onclick="window.open('explainHealtySoil.html', '_blank')">Next ➡️</button>
+
+  <script>
+    let draggedTool = null;
+    let collectedSamples = 0;
+    const totalSamples = 3;
+    let usedTools = new Set();
+
+    const soil = document.getElementById("soil");
+    const bucket = document.getElementById("bucket");
+    const message = document.getElementById("message");
+
+    document.querySelectorAll('.tool').forEach(tool => {
+      tool.addEventListener('dragstart', e => {
+        draggedTool = e.target.id;
+      });
+    });
+
+    // إسقاط على التربة (عمل نسخة)
+    soil.addEventListener('dragover', e => e.preventDefault());
+    soil.addEventListener('drop', e => {
+      if (!draggedTool) return;
+
+      if (usedTools.has(draggedTool)) {
+        message.innerText = draggedTool + " was already used! Pick another tool.";
+        return;
+      }
+
+      const toolClone = document.createElement('img');
+      toolClone.src = document.getElementById(draggedTool).src;
+      toolClone.id = draggedTool + "_sample";
+      toolClone.style.width = "80px";
+      toolClone.style.position = "absolute";
+      toolClone.style.left = "50%";
+      toolClone.style.top = "50%";
+      toolClone.style.transform = "translate(-50%, -50%)";
+      toolClone.draggable = true;
+
+      // السحب للدلو
+      toolClone.addEventListener('dragstart', e => {
+        draggedTool = toolClone.id;
+      });
+
+      soil.appendChild(toolClone);
+      message.innerText = draggedTool + " took a soil sample! Now put it in the bucket.";
+    });
+
+    // إسقاط على الدلو
+    bucket.addEventListener('dragover', e => e.preventDefault());
+    bucket.addEventListener('drop', e => {
+      if (!draggedTool || !draggedTool.includes("_sample")) {
+        message.innerText = "Take a soil sample first!";
+        return;
+      }
+
+      if (usedTools.has(draggedTool)) return;
+
+      // إزالة السمبل من التربة بعد وضعه في الدلو
+      const sampleImg = document.getElementById(draggedTool);
+      if (sampleImg) {
+        sampleImg.remove();
+      }
+
+      usedTools.add(draggedTool);
+      collectedSamples++;
+      message.innerText =
+        "Sample placed in bucket ✅ (" + collectedSamples + "/" + totalSamples + ")";
+
+      if (collectedSamples === totalSamples) {
+        message.innerText = "🎉 You collected all soil samples! Well done!";
+        document.getElementById("nextBtn").style.display = "inline-block";
+      }
+    });
+  </script>
+</body>
+</html>
+

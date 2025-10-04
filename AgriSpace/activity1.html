@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AgriSpace</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Comic Neue', cursive;
+      background: url("photo_background.jpg") no-repeat center center/cover;
+      color: white;
+    }
+
+    /* overlay */
+    .overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 0;
+    }
+
+    /* Navbar */
+    header {
+      width: 90%;
+      background: rgba(255,255,255,0.7); 
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 40px;
+      position: fixed;
+      top: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+      border-radius: 12px;
+      backdrop-filter: blur(5px);
+    }
+    .logo {
+      font-size: 24px;
+      font-weight: bold;
+      color: #e74c3c;
+    }
+    nav {
+      display: flex;
+      gap: 25px;
+      align-items: center;
+    }
+    nav a {
+      text-decoration: none;
+      color: #333;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 15px;
+      border-radius: 8px;
+      transition: 0.3s;
+      cursor: pointer;
+    }
+    nav a:hover {
+      color: white;
+    }
+
+    .navbar #Welcome-text 
+  {
+    margin-left: 25px;
+    font-style: italic;
+    font-weight: bold;
+    color: #333;
+    gap: 8px;
+  }
+
+  .character.selected img {
+  border-color: #00ffcc; /* لون مميز */
+  transform: scale(1.15);
+  box-shadow: 0 0 15px rgba(0, 255, 204, 0.7);
+}
+
+#profile-pic img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid #00ffcc;
+  margin-right: -15px;
+  vertical-align: middle;
+}
+
+#Welcome-text {
+  font-style: italic;
+  font-weight: bold;
+  color: #333;
+}
+
+    /* Hero Section */
+.hero {
+  position: relative;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  z-index: 1;
+  padding: 120px 20px 0;
+}
+
+.hero h1 {
+  font-size: 2.2rem;
+  font-weight: bold;
+  margin-bottom: 15px;
+  color: #ffdd57;
+}
+
+.hero h3 {
+  font-size: 1.2rem;
+  max-width: 700px;
+  line-height: 1.5;
+  margin-bottom: 30px;
+}
+
+
+    /* زرار سهم */
+    .btn {
+  position: relative;
+  z-index: 1;
+  margin: 10px;
+  width: 200px;
+  height: 60px;
+  background: green;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: 0.3s;
+  font-size: 1.1rem;
+  font-weight: bold;
+  clip-path: polygon(0 0, 85% 0, 100% 50%, 85% 100%, 0 100%);
+  
+}
+.btn:hover {
+  background: darkgreen;
+  transform: scale(1.05);
+}
+
+
+    /* الصور تحت الأزرار */
+    .images-container {
+      display: flex;
+      justify-content: space-between;
+      width: 40%;
+      margin-top: 40px;
+      z-index: 1;
+    }
+    .images-container img {
+      width: 160px;
+      border-radius: 10px;
+      transition: 0.3s;
+    }
+    .images-container img:hover {
+      transform: scale(2.1);
+    }
+  </style>
+</head>
+<body>
+  <!-- overlay -->
+  <div class="overlay"></div>
+
+  <!-- Navbar -->
+  <header>
+    <div class="logo">AgriSpace</div>
+    <nav>
+      <!-- خليت الـ Home يشغّل الصوت -->
+      <a href="#" onclick="playMusic()"><i class="fa-solid fa-house"></i> Home</a>
+      <a href="#"><i class="fa-solid fa-gamepad"></i> Games</a>
+      <a href="#"><i class="fa-solid fa-circle-info"></i> About</a>
+      <a href="#"><i class="fa-solid fa-envelope"></i> Contact</a>
+     <span id="profile-pic"></span>
+      <span id="Welcome-text">Hi User, welcome on board 🚀</span>
+    </nav>
+  </header>
+
+  <!-- Hero Section -->
+  <div class="hero">
+    <h1>Welcome!</h1>
+    <h3>Farmers and ranchers care for the environment every day. Gather information and use important tools to help the soil and water thrive on the farm!</h3>
+
+    <!-- خليت بس زرار واحد للـ play -->
+    <button class="btn" onclick="window.open('letsPlayGame1.html', '_blank')">Let's play</button>
+    <button class="btn" onclick="window.open('learnHowTOPlayGame1.html', '_blank')">Learn How to Play</button>
+
+<audio id="bg-music" loop>
+  <source src="Audio_background.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+  const audio = document.getElementById("bg-music");
+
+  function playMusic() {
+    const promise = audio.play();
+    if (promise !== undefined) {
+      promise.then(() => {
+        console.log("Music started 🎵");
+        localStorage.setItem("music", "playing");
+      }).catch(err => {
+        console.warn("Autoplay blocked:", err);
+      });
+    }
+  }
+
+  // تشغيل الصوت عند أول ضغطة في الصفحة
+  document.body.addEventListener("click", () => {
+    if (localStorage.getItem("music") !== "playing") {
+      playMusic();
+    }
+  }, { once: true });
+
+  // تشغيله تلقائي لو كان شغال قبل كده
+  window.addEventListener("load", () => {
+    if (localStorage.getItem("music") === "playing") {
+      playMusic();
+    }
+  });
+</script>
+
+
+
+    <!-- الصور -->
+    <div class="images-container">
+      <img src="Farmer2rm.png" alt="Left Image">
+      <img src="scientist4rm.png" alt="Right Image">
+    </div>
+    
+  </div>
+  
+
+  <script src="script.js"></script>
+</body>
+</html>

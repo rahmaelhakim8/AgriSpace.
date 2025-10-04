@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Soil Health & Heat Guide</title>
+  <style>
+    body {
+      font-family: 'Comic Neue', cursive;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+
+    /* خلفية الفيديو */
+    #bgVideo {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1; /* يخلي الفيديو خلف كل العناصر */
+    }
+
+    h2 {
+      margin-top: 15px;
+      color: #2c3e50;
+    }
+
+    #container {
+      position: relative;
+      width: 600px;
+      margin: 20px auto;
+      border: 3px solid #8b5a2b;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #fff;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      z-index: 1;
+    }
+
+    /* صورة التربة */
+    #soilImg {
+      width: 100%;
+      display: block;
+    }
+
+    /* الشخصية */
+    #character {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      width: 170px;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+    }
+    #character:hover {
+      transform: scale(1.1);
+    }
+
+    /* الرسالة */
+    #messageBox {
+      position: absolute;
+      bottom: 160px;
+      right: 150px;
+      width: 320px;
+      background: rgba(255,255,255,0.95);
+      border: 2px solid #2c3e50;
+      border-radius: 12px;
+      padding: 15px;
+      font-size: 16px;
+      color: #333;
+      text-align: left;
+      display: none;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+
+    /* زرار */
+    #nextBtn {
+      display: none;
+      position: absolute;
+      bottom: 20px;
+      right: 160px;
+      padding: 12px 18px;
+      font-size: 16px;
+      background: #28a745;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    #nextBtn:hover {
+      background: #218838;
+    }
+
+    /* box للخلفية */
+
+.title-container {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.9); /* خلفية بيضاء شبه شفافة */
+  padding: 15px 25px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  margin: 20px auto;
+  text-align: center;
+  z-index: 1;
+}
+.title-container h2 {
+  margin: 0 0 10px;
+  color: #2c3e50;
+}
+.title-container p {
+  margin: 0;
+  font-size: 16px;
+  color: #333;
+}
+
+
+
+  </style>
+</head>
+<body>
+   <div class="title-container">
+  <h2>Soil Health & Heat Guide</h2>
+  <p>This number shows the <b>health of the soil</b> and how <b>heat</b> affects it.<br>
+  Click the scientist 👨‍🔬 to learn step by step.</p>
+</div>
+
+
+  <div id="container">
+    <!-- صورة التربة -->
+    <img src="fertilesoil.jpg" id="soilImg" alt="Soil Image">
+
+    <!-- الشخصية -->
+    <img src="scientist4rm.png" id="character" alt="Scientist Character">
+
+    <!-- الرسالة -->
+    <div id="messageBox"></div>
+
+    <!-- الزرار -->
+    <button id="nextBtn" onclick="goToLab()">Let's go to the lab and analyze the sample ➡️</button>
+  </div>
+
+  <!-- خلفية الفيديو -->
+  <video autoplay muted loop id="bgVideo">
+    <source src="labbackground.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+
+  <script>
+    const character = document.getElementById("character");
+    const messageBox = document.getElementById("messageBox");
+    const nextBtn = document.getElementById("nextBtn");
+
+    // Soil Health messages
+    const soilHealthMessages = [
+      "🌱 <b>Soil Health:</b> 0.1 - 0.3: If the number is small, the soil is weak and not good for plants.",
+      "🌿 <b>Soil Health:</b> 0.3 - 0.6: The soil is better but still needs care to support plants.",
+      "🌾 <b>Soil Health:</b> 0.6 - 0.8: The soil is strong and healthy, great for crops.",
+      "🌻 <b>Soil Health:</b> > 0.8: The soil is excellent, perfect for farming!"
+    ];
+
+    // Soil Heat messages
+    const soilHeatMessages = [
+      "❄️ < 15°C: TOO COLD - Soil is too cold, plant growth will be very slow.",
+      "🌤️ 15°C - 30°C: OPTIMAL - Perfect temperature for normal growth.",
+      "🔥 30°C - 38°C: CAUTION - Soil is hot, plants need a lot of water.",
+      "☠️ > 38°C: EXTREME HEAT - Soil is too hot, plants can die."
+    ];
+
+    // Combine all messages
+    const messages = [...soilHealthMessages, ...soilHeatMessages];
+
+    let currentMessage = 0;
+
+    // Hover: show current message
+    character.addEventListener("mouseenter", () => {
+      messageBox.innerHTML = messages[currentMessage];
+      messageBox.style.display = "block";
+    });
+
+    // Hide message on mouse leave
+    character.addEventListener("mouseleave", () => {
+      messageBox.style.display = "none";
+    });
+
+    // On click: move to next message
+    character.addEventListener("click", () => {
+      currentMessage++;
+      if (currentMessage < messages.length) {
+        messageBox.innerHTML = messages[currentMessage];
+        messageBox.style.display = "block";
+      } else {
+        messageBox.innerHTML = "🎉 Great job! You learned about soil health and heat.";
+        nextBtn.style.display = "inline-block"; // show the button
+      }
+    });
+
+    // يفتح صفحة جديدة (lab.html)
+    function goToLab() {
+      window.location.href = "letsPlayGame2.html";
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Soil Lab Game</title>
+  <style>
+    /* Reset / layout */
+    * { box-sizing: border-box; }
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      font-family: 'Comic Neue', cursive;
+      overflow: hidden; /* يمنع التمرير لو الفيديو يغطي */
+    }
+
+    /* خلفية الفيديو تغطي الشاشة كلها */
+    #bgVideo {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      object-fit: cover; /* يغطي بدون تشويه */
+      z-index: -1;       /* خلف كل العناصر */
+    }
+
+    /* طبقة شفافة فوق الفيديو لو عايزة تخفف الإضاءة */
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0,0,0,0.25); /* عدلي القيمة لو عايزة أغمق/أفتح */
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* المحتوى فوق الفيديو */
+    .page {
+      position: relative;
+      z-index: 1; /* فوق الفيديو والـ overlay */
+      min-height: 100vh;
+      color: #222;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 18px;
+      gap: 8px;
+    }
+
+    h2 { margin: 8px 0; color: #fff; text-shadow: 0 2px 6px rgba(0,0,0,0.7); }
+    p  { margin: 0 0 10px 0; color: #fff; text-shadow: 0 1px 4px rgba(0,0,0,0.6); }
+
+    /* العينة */
+    .sample {
+      width: 140px;
+      height: 120px;
+      background: linear-gradient(180deg,#e0d3a8,#d0c18a);
+      border: 2px solid rgba(0,0,0,0.4);
+      border-radius: 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: grab;
+      font-weight: 700;
+      color: #2b2b2b;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+      user-select: none;
+      margin-top: 6px;
+    }
+
+    /* حاوية المناطق */
+    .zones {
+      display: flex;
+      gap: 30px;
+      align-items: flex-start;
+      justify-content: center;
+      width: 100%;
+      max-width: 900px;
+      margin-top: 18px;
+    }
+
+    .dropZone {
+  width: 260px;
+  height: 160px;
+  border: 3px dashed rgba(255,255,255,0.7);
+  background: #ffffff; /* بدل rgba شبه شفاف */
+  color: #222; /* ممكن تغيّري اللون ليتناسب مع الخلفية */
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  text-align: center;
+  transition: transform .18s ease, background .18s ease;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.35);
+}
+    .dropZone.highlight {
+      transform: translateY(-6px);
+      background: rgba(255,255,255,0.12);
+      border-color: #a8ffb0;
+    }
+    .dropZone.smallLabel {
+      font-size: 13px;
+    }
+
+    /* شخصية المزارع وبلون الكلام */
+    #farmerContainer {
+      position: fixed;
+      right: 22px;
+      bottom: 22px;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    #farmerImg { width: 110px; cursor: pointer; filter: drop-shadow(0 6px 12px rgba(0,0,0,0.4)); }
+
+    #messageBox {
+      display: none;
+      width: 260px;
+      background: rgba(255,255,255,0.96);
+      color: #222;
+      border-radius: 12px;
+      padding: 12px;
+      border: 2px solid rgba(0,0,0,0.12);
+      box-shadow: 0 8px 22px rgba(0,0,0,0.25);
+      text-align: left;
+      font-size: 14px;
+    }
+
+    /* الأزرار الاختيارات داخل الرسالة */
+    .choices { margin-top: 8px; display:flex; gap:8px; flex-wrap:wrap; }
+    .choices button {
+      padding: 6px 10px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      background: #2b9fff;
+      color: white;
+      font-weight: 600;
+    }
+    .choices button:hover { filter: brightness(.95); }
+
+    /* Responsive */
+    @media (max-width: 760px) {
+      .zones { flex-direction: column; gap: 16px; align-items: center; }
+      .dropZone { width: 86vw; max-width: 380px; }
+      .sample { width: 120px; height: 100px; }
+      #messageBox { width: 86vw; max-width: 360px; right: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- خلفية الفيديو: غطي الشاشة كاملة. -->
+  <video id="bgVideo" autoplay muted loop playsinline>
+    <!-- ضع هنا اسم ملف الفيديو المناسب في المشروع -->
+    <source src="labbackground.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+
+  <!-- طبقة تخفيف الإضاءة (اختياري) -->
+  <div class="overlay"></div>
+
+  <div class="page">
+    <h2>🧪 Soil Lab – Analyze Your Sample</h2>
+    <p style="max-width: 900px; margin: 0 auto; text-align: center;">
+  Drag the sample first to the <br><b>Moisture Box</b>, <br>then to the <b>Heat Box</b>.<br>
+  While dragging, the boxes will highlight and show the numbers (moisture & heat).
+</p>
+
+    <!-- العينة الوحيدة -->
+    <div id="sample" class="sample" draggable="true"
+     data-moisture-val="0.3 - 0.6"
+     data-heat-val="30°C - 38°C"
+     data-moisture-msg="0.3 - 0.6 → Soil has some moisture but needs care."
+     data-heat-msg="30°C - 38°C → CAUTION - Soil is hot; more water needed.">
+  <img src="soilsample.jpg" alt="Soil Sample" style="width:100px; height:auto;">
+</div>
+
+    <!-- المربعات: Moisture و Heat -->
+    <div class="zones">
+      <div id="moistureZone" class="dropZone">
+        <div class="smallLabel">💧 Moisture</div>
+        <div id="moistureValue" style="margin-top:8px; font-weight:700">—</div>
+      </div>
+
+      <div id="heatZone" class="dropZone">
+        <div class="smallLabel">🌡️ Heat</div>
+        <div id="heatValue" style="margin-top:8px; font-weight:700">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- شخصية المزارع وبلون الكلام -->
+  <div id="farmerContainer" aria-hidden="false">
+    <div id="messageBox" role="dialog" aria-live="polite"></div>
+    <img id="farmerImg" src="scientist4rm.png" alt="Scientist">
+  </div>
+
+  <!-- رسالة ملهمة -->
+<div id="inspirationMessage" style="
+    display:none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255,255,255,0.95);
+    padding: 25px 35px;
+    border-radius: 14px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.35);
+    font-size: 18px;
+    text-align: center;
+    z-index: 9999;
+    color: #222;
+">
+  🌟 Amazing job! 🌱 <br><br>
+  By making a choice, you showed how curious and smart you are!  
+  Just like real scientists, every small step you take helps the Earth and makes the world better. 🌍✨ <br><br>
+  Keep exploring, keep asking questions, and remember: <b>you have the power to grow big ideas from small actions!</b> 🌱💡
+  <br><br>
+  <button onclick="document.getElementById('inspirationMessage').style.display='none'" style="
+    padding: 10px 18px;
+    border-radius: 8px;
+    border: none;
+    background: #28a745;
+    color: white;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 16px;
+  ">Got it! ✅</button>
+</div>
+
+
+
+  <script>
+    // عناصر DOM
+    const sample = document.getElementById('sample');
+    const moistureZone = document.getElementById('moistureZone');
+    const heatZone = document.getElementById('heatZone');
+    const moistureValue = document.getElementById('moistureValue');
+    const heatValue = document.getElementById('heatValue');
+    const messageBox = document.getElementById('messageBox');
+    const farmerImg = document.getElementById('farmerImg');
+
+    // قيم العينة (مخزنة في attributes)
+    const moistureVal = sample.dataset.moistureVal; // "0.3 - 0.6"
+    const heatVal = sample.dataset.heatVal;         // "30°C - 38°C"
+    const moistureMsg = sample.dataset.moistureMsg;
+    const heatMsg = sample.dataset.heatMsg;
+
+    // حالات إتمام التحليل
+    let moistureDone = false;
+    let heatDone = false;
+
+    // drag start: نرسل id علشان نتعرف
+    sample.addEventListener('dragstart', e => {
+      e.dataTransfer.setData('text/plain', 'soil-sample');
+      // أثناء السحب نعرض القيم على الصناديق (حسب طلبك: يظهر الرقم أثناء السحب)
+      moistureValue.textContent = moistureVal;
+      heatValue.textContent = heatVal;
+    });
+
+    // السماح بالـ drop و إظهار تأثير بصري
+    function enableDrop(zone) {
+      zone.addEventListener('dragover', e => {
+        e.preventDefault();
+        zone.classList.add('highlight');
+      });
+      zone.addEventListener('dragleave', e => {
+        zone.classList.remove('highlight');
+      });
+    }
+    enableDrop(moistureZone);
+    enableDrop(heatZone);
+
+    // drop في Moisture
+    // drop في Moisture
+moistureZone.addEventListener('drop', e => {
+  e.preventDefault();
+  moistureZone.classList.remove('highlight');
+  const data = e.dataTransfer.getData('text/plain');
+  if (data === 'soil-sample' && !moistureDone) {
+    moistureDone = true;
+    moistureZone.style.borderStyle = 'solid';
+    moistureZone.style.borderColor = '#a8ffb0';
+    moistureZone.style.background = '#ffffff'; // خلفية صلبة
+    moistureZone.querySelector('.smallLabel').textContent = '💧 Moisture (analyzed)';
+    moistureZone.querySelector('.smallLabel').style.color = '#000000'; // أو '#fff' حسب رغبتك
+    moistureValue.style.color = '#000000'; // اجعل الرقم أبيض أو أسود حسب الخلفية
+    showResultPartial();
+  }
+});
+
+// drop في Heat
+heatZone.addEventListener('drop', e => {
+  e.preventDefault();
+  heatZone.classList.remove('highlight');
+  const data = e.dataTransfer.getData('text/plain');
+  if (data === 'soil-sample' && !heatDone) {
+    heatDone = true;
+    heatZone.style.borderStyle = 'solid';
+    heatZone.style.borderColor = '#ffcc66';
+    heatZone.style.background = '#ffffff'; // خلفية صلبة
+    heatZone.querySelector('.smallLabel').textContent = '🌡️ Heat (analyzed)';
+    heatZone.querySelector('.smallLabel').style.color = '#000000';
+    heatValue.style.color = '#000000'; // اجعل الرقم أبيض أو أسود حسب الخلفية
+    showResultPartial();
+  }
+});
+
+
+    // كل ما يتحلل جزء نعرض للمزارع ما توصل له النتائج جزئيًا، ولما يكتمل الاثنان نعرض الخيارات
+    function showResultPartial() {
+      // لو انتهت واحدة بس نظهر رسالة قصيرة
+      if (moistureDone && !heatDone) {
+        messageBox.style.display = 'block';
+        messageBox.innerHTML = `<b>Moisture result</b><br>${moistureMsg}<br><small>Now drag the same sample to the Heat box.</small>`;
+      } else if (!moistureDone && heatDone) {
+        messageBox.style.display = 'block';
+        messageBox.innerHTML = `<b>Heat result</b><br>${heatMsg}<br><small>Now drag the same sample to the Moisture box.</small>`;
+      } else if (moistureDone && heatDone) {
+        // كلاهما جاهزين — نعرض النتائج مع خيارات لتعديل
+        messageBox.style.display = 'block';
+        messageBox.innerHTML = `
+          <b>Analysis Complete</b><br>
+          💧 Moisture: ${moistureVal} — ${moistureMsg}<br>
+          🔥 Heat: ${heatVal} — ${heatMsg}
+          <div style="margin-top:10px;">What should we do to improve the soil?</div>
+          <div class="choices">
+            <button onclick="applyChoice('Water the soil')">Water the soil</button>
+<button onclick="applyChoice('Add compost')">Add compost</button>
+<button onclick="applyChoice('Loosen the soil')">Loosen the soil</button>
+<button onclick="applyChoice('Check with probe')">Check with probe</button>
+
+          </div>
+        `;
+      }
+    }
+
+    // تطبيق اختيار الطفل ورد فعل المزارع
+    function applyChoice(action) {
+  let feedback = "";
+
+  if (action === 'Water the soil') {
+    feedback = "💧 Perfect! Adding water is exactly what the soil needs. Great job! 🎉";
+  } else if (action === 'Add compost') {
+    feedback = "🌱 Compost helps the soil retain moisture and stay healthy. Great thinking!";
+  } else if (action === 'Loosen the soil') {
+    feedback = "🌾 Loosening soil improves airflow and helps water reach roots better!";
+  } else if (action === 'Check with probe') {
+    feedback = "🔬 Smart idea! Checking with a probe gives accurate data for real scientists!";
+  }
+
+  messageBox.style.display = "block";
+  messageBox.innerText = feedback;
+
+  setTimeout(() => {
+    showInspiration();
+  }, 500);
+}
+
+
+function showInspiration() {
+  const inspirationBox = document.createElement("div");
+  inspirationBox.id = "inspirationMessage";
+  inspirationBox.style.cssText = `
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255,255,255,0.95);
+    padding: 25px 35px;
+    border-radius: 14px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.35);
+    font-size: 18px;
+    text-align: center;
+    z-index: 9999;
+    color: #222;
+    max-width: 400px;
+  `;
+  inspirationBox.innerHTML = `
+    🌟 Amazing job! 🌱 <br><br>
+    You just acted like a real scientist — testing, thinking, and making choices.  
+    Every step you take helps plants grow and makes the Earth healthier. 🌍✨ <br><br>
+    Remember: <b>even small actions like watering soil can create a big change!</b> 💡🌱
+    <br><br>
+    <button onclick="document.body.removeChild(document.getElementById('inspirationMessage'))" style="
+      padding: 10px 18px;
+      border-radius: 8px;
+      border: none;
+      background: #28a745;
+      color: white;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 16px;
+    ">Got it! ✅</button>
+  `;
+  document.body.appendChild(inspirationBox);
+}
+
+  </script>
+</body>
+</html>
